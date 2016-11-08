@@ -15,6 +15,8 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.type.CollectionType;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 
 /**
@@ -28,6 +30,7 @@ public class GeminiExchange {
     	
         //System.out.println(getSymbols());
         System.out.println(getTicker("btcusd"));
+        System.out.println(getOrderBook("btcusd"));
     } 
 
     //in the future: this should return a Ticker ready to work with
@@ -60,6 +63,39 @@ public class GeminiExchange {
 
         return result;
 
+    }
+    
+    public static OrderBook getOrderBook(String symbol){
+    	
+    	String priceSymbol = symbol.substring(0, 3).toUpperCase();
+    	String quantitySymbol = symbol.substring(3, 6).toUpperCase();
+    	
+    	OrderBook result = new OrderBook();
+    	
+    	try {
+        	
+        	String output = getRequest("https://api.gemini.com/v1/book/"+priceSymbol.toUpperCase()+quantitySymbol.toUpperCase());
+
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+            
+            System.out.println(output);
+            
+            result = mapper.readValue(output, OrderBook.class);
+
+            System.out.println("----------");
+            System.out.println(result);
+            System.out.println("----------");
+            
+            
+           
+            
+        } catch (Exception e) {
+
+            e.printStackTrace(); 
+        }
+    	
+    	return result;
     }
     
     public static String getRequest(String url) throws RuntimeException{
