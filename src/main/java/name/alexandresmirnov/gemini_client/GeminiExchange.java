@@ -26,9 +26,6 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 public class GeminiExchange {
     public static void main( String[] args ) {
 
-    	getSymbols();
-    	
-        //System.out.println(getSymbols());
         System.out.println(getTicker("btcusd"));
         System.out.println(getOrderBook("btcusd"));
     } 
@@ -65,6 +62,7 @@ public class GeminiExchange {
 
     }
     
+    //TODO: implement URL parameters limit_bids and limit_asks
     public static OrderBook getOrderBook(String symbol){
     	
     	String priceSymbol = symbol.substring(0, 3).toUpperCase();
@@ -79,16 +77,9 @@ public class GeminiExchange {
             ObjectMapper mapper = new ObjectMapper();
             mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
             
-            System.out.println(output);
-            
+     
             result = mapper.readValue(output, OrderBook.class);
 
-            System.out.println("----------");
-            System.out.println(result);
-            System.out.println("----------");
-            
-            
-           
             
         } catch (Exception e) {
 
@@ -128,8 +119,7 @@ public class GeminiExchange {
             
             symbols = mapper.readValue(output,  mapper.getTypeFactory().constructCollectionType(ArrayList.class, String.class));
 
-            ListIterator<String> iterator = symbols.listIterator();
-            
+
 
         } catch (Exception e) {
 
