@@ -5,12 +5,14 @@ import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -28,6 +30,11 @@ public class GeminiExchange {
 
         System.out.println(getTicker("btcusd"));
         System.out.println(getOrderBook("btcusd"));
+        
+        long testTime = 1420088400;
+        Timestamp ts = new Timestamp(testTime);
+        
+        System.out.println(getTradeHistory("btcusd", ts).get(0));
     } 
 
     //in the future: this should return a Ticker ready to work with
@@ -62,8 +69,10 @@ public class GeminiExchange {
 
     }
     
+
     //TODO: implement URL parameters limit_bids and limit_asks
     public static OrderBook getOrderBook(String symbol){
+    	
     	
     	String priceSymbol = symbol.substring(0, 3).toUpperCase();
     	String quantitySymbol = symbol.substring(3, 6).toUpperCase();
@@ -75,7 +84,7 @@ public class GeminiExchange {
         	String output = getRequest("https://api.gemini.com/v1/book/"+priceSymbol.toUpperCase()+quantitySymbol.toUpperCase());
 
             ObjectMapper mapper = new ObjectMapper();
-            mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+            mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES); //why do I need this?
             
      
             result = mapper.readValue(output, OrderBook.class);
@@ -88,6 +97,33 @@ public class GeminiExchange {
     	
     	return result;
     }
+    
+    //Using double and not Timestamp, because this doesn't need to be extremely precise
+    //returns Trade[], all trades that occured after ts
+    public static List<Trade> getTradeHistory(String symbol, Timestamp ts){
+    	
+    	List<Trade> trades = new ArrayList();
+    	
+  
+    	
+    	try {
+    		String url = "https://api.gemini.com/v1/trades/"+symbol+"?since="+Long.toString(ts.getTime());
+    		
+    		System.out.println(url);
+    		
+    		String output = getRequest(url);
+    		
+    		ObjectMapper mapper = new ObjectMapper();
+    		trades = mapper.readValue(output, new TypeReference<List<Trade>>(){});
+    	
+    	} catch (Exception e) {
+    		e.printStackTrace(); 
+    	}
+    	
+    	return trades;
+    	
+    }
+    
     
     public static String getRequest(String url) throws RuntimeException{
     	Client client = Client.create();
@@ -105,6 +141,7 @@ public class GeminiExchange {
         
         return response.getEntity(String.class);
     }
+    
 
     
     public static List<String> getSymbols(){
