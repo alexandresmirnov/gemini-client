@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 
+import javax.ws.rs.core.UriBuilder;
+
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -17,6 +19,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.type.CollectionType;
 import com.fasterxml.jackson.databind.type.TypeFactory;
@@ -28,13 +31,14 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 public class GeminiExchange {
     public static void main( String[] args ) {
 
-        System.out.println(getTicker("btcusd"));
-        System.out.println(getOrderBook("btcusd"));
-        
+    	System.out.println(getOrderBook("btcusd", 1, 1).getBids().get(0));
+    	
         long testTime = 1420088400;
         Timestamp ts = new Timestamp(testTime);
-        
-        System.out.println(getTradeHistory("btcusd", ts).get(0));
+
+        System.out.println("getTradeHistory: "+getTradeHistory("btcusd", ts).get(0));
+        System.out.println();
+        System.out.println("getCurrentAuction: "+getCurrentAuction("btcusd"));
     } 
 
     public static List<String> getSymbols(){
@@ -57,7 +61,7 @@ public class GeminiExchange {
         return symbols;
     }
     
-    //in the future: this should return a Ticker ready to work with
+
     public static Ticker getTicker(String symbol){
     	
     	String priceSymbol = symbol.substring(0, 3).toUpperCase();
@@ -90,18 +94,29 @@ public class GeminiExchange {
     }
     
 
-    //TODO: implement URL parameters limit_bids and limit_asks
+   
+    //either both limitBids and limitAsks are specified, or neither
     public static OrderBook getOrderBook(String symbol){
-    	
-    	
-    	String priceSymbol = symbol.substring(0, 3).toUpperCase();
-    	String quantitySymbol = symbol.substring(3, 6).toUpperCase();
+    	return getOrderBook(symbol, -1, -1);
+    }
+    
+    public static OrderBook getOrderBook(String symbol, int limitBids, int limitAsks){
     	
     	OrderBook result = new OrderBook();
     	
     	try {
         	
-        	String output = getRequest("https://api.gemini.com/v1/book/"+priceSymbol.toUpperCase()+quantitySymbol.toUpperCase());
+    		String url = UriBuilder.fromUri("https://api.gemini.com/v1")
+    					.path("book")
+    					.path(symbol)
+    					.queryParam("limit_bids", "{arg1}")
+    					.queryParam("limit_asks", "{arg2}")
+    					.build((limitBids == -1) ? "" : Integer.toString(limitBids), (limitAsks == -1) ? "" : Integer.toString(limitAsks))
+    					.toString();
+    		
+    		System.out.println(url);
+    		
+        	String output = getRequest(url);
 
             ObjectMapper mapper = new ObjectMapper();
             mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES); //why do I need this?
@@ -143,6 +158,30 @@ public class GeminiExchange {
     }
     
  
+    public static Auction getCurrentAuction(String symbol){
+
+    	Auction result = new Auction();
+    	
+    	try {
+        	
+        	String output = getRequest("https://api.gemini.com/v1/auction/"+symbol);
+
+        	System.out.println(output);
+        	
+        	
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.setPropertyNamingStrategy(
+            	    PropertyNamingStrategy.SNAKE_CASE); //TODO: make snake case work
+            result = mapper.readValue(output, Auction.class);
+
+            
+        } catch (Exception e) {
+
+            e.printStackTrace(); 
+        }
+    	
+    	return result;
+    }
     
     
     public static String getRequest(String url) throws RuntimeException{

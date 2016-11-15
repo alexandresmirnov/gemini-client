@@ -1,5 +1,6 @@
 package name.alexandresmirnov.gemini_client;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -11,6 +12,7 @@ public class OrderBook {
 	private static class Order {
 		
 		double price, amount;
+		Timestamp timestamp;
 		
 		public void setPrice(double value){
 			price = value;
@@ -28,10 +30,20 @@ public class OrderBook {
 			return amount;
 		}
 		
+
+		public Timestamp getTimestamp() {
+			return timestamp;
+		}
+
+		public void setTimestamp(Timestamp timestamp) {
+			this.timestamp = timestamp;
+		}
+
 		public String toString(){
 			return new ToStringBuilder(this).
 					append("price", price).
 					append("amount", amount).
+					append("timestamp", timestamp).
 					toString();
 		}
 		
