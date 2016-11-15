@@ -37,6 +37,26 @@ public class GeminiExchange {
         System.out.println(getTradeHistory("btcusd", ts).get(0));
     } 
 
+    public static List<String> getSymbols(){
+
+        List<String> symbols = new ArrayList<String>();
+
+        try {
+
+        	String output = getRequest("https://api.gemini.com/v1/symbols");
+            
+            ObjectMapper mapper = new ObjectMapper();
+            
+            symbols = mapper.readValue(output,  mapper.getTypeFactory().constructCollectionType(ArrayList.class, String.class));
+
+
+        } catch (Exception e) {
+
+            e.printStackTrace(); 
+        } 
+        return symbols;
+    }
+    
     //in the future: this should return a Ticker ready to work with
     public static Ticker getTicker(String symbol){
     	
@@ -98,15 +118,13 @@ public class GeminiExchange {
     	return result;
     }
     
-    //Using double and not Timestamp, because this doesn't need to be extremely precise
-    //returns Trade[], all trades that occured after ts
+    
     public static List<Trade> getTradeHistory(String symbol, Timestamp ts){
     	
-    	List<Trade> trades = new ArrayList();
-    	
-  
+    	List<Trade> trades = new ArrayList<Trade>();
     	
     	try {
+    		
     		String url = "https://api.gemini.com/v1/trades/"+symbol+"?since="+Long.toString(ts.getTime());
     		
     		System.out.println(url);
@@ -114,7 +132,7 @@ public class GeminiExchange {
     		String output = getRequest(url);
     		
     		ObjectMapper mapper = new ObjectMapper();
-    		trades = mapper.readValue(output, new TypeReference<List<Trade>>(){});
+    		trades = mapper.readValue(output, new TypeReference<List<Trade>>(){}); //TODO: understand TypeReference
     	
     	} catch (Exception e) {
     		e.printStackTrace(); 
@@ -123,6 +141,8 @@ public class GeminiExchange {
     	return trades;
     	
     }
+    
+ 
     
     
     public static String getRequest(String url) throws RuntimeException{
@@ -144,24 +164,5 @@ public class GeminiExchange {
     
 
     
-    public static List<String> getSymbols(){
-
-        List<String> symbols = new ArrayList<String>();
-
-        try {
-
-        	String output = getRequest("https://api.gemini.com/v1/symbols");
-            
-            ObjectMapper mapper = new ObjectMapper();
-            
-            symbols = mapper.readValue(output,  mapper.getTypeFactory().constructCollectionType(ArrayList.class, String.class));
-
-
-
-        } catch (Exception e) {
-
-            e.printStackTrace(); 
-        } 
-        return symbols;
-    }
+    
 }

@@ -1,20 +1,15 @@
 package name.alexandresmirnov.gemini_client;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+
+import org.apache.commons.lang.builder.ToStringBuilder;
 
 public class OrderBook {
-
-	@Override
-	public String toString() {
-		return "OrderBook [bids=" + Arrays.toString(bids) + ", asks=" + Arrays.toString(asks) + "]";
-	}
+	
 	private static class Order {
-
-		@Override
-		public String toString() {
-			return "Order [price=" + price + ", amount=" + amount + "]";
-		}
-
+		
 		double price, amount;
 		
 		public void setPrice(double value){
@@ -33,25 +28,40 @@ public class OrderBook {
 			return amount;
 		}
 		
+		public String toString(){
+			return new ToStringBuilder(this).
+					append("price", price).
+					append("amount", amount).
+					toString();
+		}
+		
 	}
 	
-	Order[] bids;
-	Order[] asks;
+	List<Order> bids;
+	List<Order> asks;
 	
 	public void setBids(Order[] entries){
-		bids = entries;
+		bids = new ArrayList<Order> (Arrays.asList(entries));
 	}
 	
-	public Order[] getBids(){
+	public List<Order> getBids(){
 		return bids;
 	}
 	
 	public void setAsks(Order[] entries){
-		asks = entries;
+		asks = new ArrayList<Order> (Arrays.asList(entries));
 	}
 	
-	public Order[] getAsks(){
+	public List<Order> getAsks(){
 		return asks;
 	}
+	
+	public String toString(){
+		return new ToStringBuilder(this).
+				append("bids", bids).
+				append("asks", asks).
+				toString();
+	}
+	
 	
 }
