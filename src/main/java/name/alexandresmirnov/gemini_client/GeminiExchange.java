@@ -96,6 +96,7 @@ public class GeminiExchange {
 
    
     //either both limitBids and limitAsks are specified, or neither
+    //hashmap?
     public static OrderBook getOrderBook(String symbol){
     	return getOrderBook(symbol, -1, -1);
     }
@@ -133,14 +134,18 @@ public class GeminiExchange {
     	return result;
     }
     
+    //TODO: implement url parameters since, limit_trades, include_breaks
+    //which ones are supplied shouldn't matter; make a map or something, they need to be independent
     
-    public static List<Trade> getTradeHistory(String symbol, Timestamp ts){
+    public static List<Trade> getTradeHistory(String symbol, Timestamp since){
     	
     	List<Trade> trades = new ArrayList<Trade>();
     	
     	try {
     		
-    		String url = "https://api.gemini.com/v1/trades/"+symbol+"?since="+Long.toString(ts.getTime());
+    		
+    		
+    		String url = "https://api.gemini.com/v1/trades/"+symbol+"?since="+Long.toString(since.getTime());
     		
     		System.out.println(url);
     		

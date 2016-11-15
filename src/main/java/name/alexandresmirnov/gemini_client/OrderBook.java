@@ -12,7 +12,6 @@ public class OrderBook {
 	private static class Order {
 		
 		double price, amount;
-		Timestamp timestamp;
 		
 		public void setPrice(double value){
 			price = value;
@@ -29,21 +28,11 @@ public class OrderBook {
 		public double getAmount(){
 			return amount;
 		}
-		
-
-		public Timestamp getTimestamp() {
-			return timestamp;
-		}
-
-		public void setTimestamp(Timestamp timestamp) {
-			this.timestamp = timestamp;
-		}
 
 		public String toString(){
 			return new ToStringBuilder(this).
 					append("price", price).
 					append("amount", amount).
-					append("timestamp", timestamp).
 					toString();
 		}
 		
