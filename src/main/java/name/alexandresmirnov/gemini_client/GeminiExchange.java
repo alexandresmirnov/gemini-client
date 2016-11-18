@@ -5,6 +5,7 @@ import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +14,6 @@ import java.util.ListIterator;
 import javax.ws.rs.core.UriBuilder;
 
 import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -62,34 +62,33 @@ public class GeminiExchange {
     }
     
 
-    public static Ticker getTicker(String symbol){
+    public static Ticker getTicker(String symbol) throws JsonParseException, JsonMappingException, IOException{
     	
     	String priceSymbol = symbol.substring(0, 3).toUpperCase();
     	String quantitySymbol = symbol.substring(3, 6).toUpperCase();
     		
-    	Ticker result = new Ticker();
+    	
         
-        try {
+        
         	
         	String output = getRequest("https://api.gemini.com/v1/pubticker/"+priceSymbol.toUpperCase()+quantitySymbol.toUpperCase());
 
             ObjectMapper mapper = new ObjectMapper();
             mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
             
-            result = mapper.readValue(output, Ticker.class);
+           
+            Ticker result = mapper.readValue(output, Ticker.class);
 
             JsonNode root = mapper.readValue(output, JsonNode.class);
 
             result.getVolume().setPriceSymbol(root.path("volume").path(priceSymbol).asText());
             result.getVolume().setQuantitySymbol(root.path("volume").path(quantitySymbol).asText());
             
+            return result;
             
-        } catch (Exception e) {
 
-            e.printStackTrace(); 
-        }
 
-        return result;
+      
 
     }
     
@@ -188,6 +187,8 @@ public class GeminiExchange {
     	return result;
     }
     
+   
+     
     
     public static String getRequest(String url) throws RuntimeException{
     	Client client = Client.create();
